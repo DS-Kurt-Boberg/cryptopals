@@ -77,16 +77,16 @@ module Challenge5 =
         let pass1 =
             match encryptedbytes1 with
             | cipherbytes1 ->
-                "pass"
+                Convert.ToBase64String(cipherbytes1) + " = " + Convert.ToBase64String(encryptedbytes1) + " : pass"
             | _ ->
                 "fail"
         let pass2 = 
             match encryptedbytes2 with
             | cipherbytes2 ->
-                "pass"
+                Convert.ToBase64String(cipherbytes2) + " = " + Convert.ToBase64String(encryptedbytes2) + " : pass"
             | _ -> 
                 "fail"
-        pass1 + ", " + pass2
+        pass1 + "\n" + pass2
 
 module Challenge6 =
 
@@ -105,6 +105,15 @@ module Challenge6 =
             |> Seq.concat
             |> Seq.toArray
 
-        let key = ExtractKeyLength(byteStream,40)
+        let keyLength = ExtractKeyLength(byteStream,40)
 
-        key.ToString()
+        let allKeys = ExtractKeys(byteStream,keyLength)
+
+        //rank keys, return best fit
+
+        let keyIndices = [|0..keyLength-1|]
+        let blocks = BlockTranspose(byteStream, keyLength)
+        let solution = Array.map2(fun block index -> XORByteArray(block,[|key.[index]|])) blocks keyIndices
+        solution
+            |> Array.concat
+            |> Convert.ToBase64String

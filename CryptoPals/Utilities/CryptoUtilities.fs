@@ -5,6 +5,8 @@ open StringUtilities
 open System.Collections
 open ByteUtilities
 
+let EnglishHistogram = [|12.02;9.10;8.12;7.68;7.31;6.95;6.28;6.02;5.92;4.32;3.98;2.88;2.71;2.61;2.30;2.11;2.09;2.03;1.82;1.49;1.11;0.69;0.17;0.11;0.10;0.07|]
+
 let everyNth n arr = 
     arr |> Array.mapi (fun i el -> el, i)              // Add index to element
         |> Array.filter (fun (el, i) -> i % n = n - 1) // Take every nth element
@@ -30,6 +32,10 @@ let BytesAreValidCharacters(input:byte[]) =
             ByteIsValidCharacter(x)
         )
         |> Seq.forall (fun x -> x = true)
+
+let ScoreEnglishHistogram(input : byte[]) : int = 
+
+    -1
 
 let ScoreListOfCandidates(input : byte[][]) =
 
@@ -83,20 +89,24 @@ let BlockTranspose(input : byte[], blockSize : int) : byte[][] =
     indexes
     |>Array.map (fun i -> everyNth i input)
 
-let ExtractKey(input : byte[], keyLength : int) : byte[] =
+let BlockInverseTranspose(input : byte[][]) : byte[] =
+    let indexes = [|0..input.Length-1|]
+    indexes
+    |> Array.map2(fun bytes index -> everyNth index bytes) input
+    |> Array.concat
+
+let ExtractKeys(input : byte[], keyLength : int) : seq<byte[]> =
     let DecryptBytes = IntArrayToByteArray([|0..255|])
     let blocks = BlockTranspose(input,keyLength)
 
-    let testStrings = 
-        blocks
+    blocks
         |> Seq.map ( fun testBytes ->
         DecryptBytes
         |> Array.map (fun b ->
             XORByteArray(testBytes,[|b|])
             )
-            |> ScoreListOfCandidates
         )
-        |> Seq.toArray
-            |> ScoreListOfStrings
-    [||]
+        |> Seq.concat
+
+
 
